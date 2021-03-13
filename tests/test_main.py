@@ -2,7 +2,7 @@
 import unittest
 
 import prass
-import common
+import prass.common as common
 
 
 class TestFpsParsing(unittest.TestCase):

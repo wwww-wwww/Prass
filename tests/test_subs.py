@@ -7,7 +7,7 @@ try:
 except ImportError:
     from io import StringIO
 
-import subs
+import prass.subs as subs
 
 
 def get_script_path(name):

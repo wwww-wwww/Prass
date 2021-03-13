@@ -2,9 +2,10 @@
 import click
 import sys
 from operator import attrgetter
-from common import PrassError, zip, map
-from subs import AssScript
-from tools import Timecodes, parse_keyframes
+from .common import PrassError, zip, map
+from .subs import AssScript, SCRIPT_INFO_SECTION
+from .tools import Timecodes, parse_keyframes
+from .resample import scale
 
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
@@ -115,6 +116,30 @@ def copy_styles(dst_file, src_file, output_file, clean, resample, forced_resolut
     dst_script.append_styles(src_script, clean, resample, forced_resolution)
     dst_script.to_ass_stream(output_file)
 
+@cli.command("resample", short_help="resample script to target resolution")
+@click.option("-o", "--output", "output_file", default="-", type=click.File(encoding="utf-8-sig", mode='w'))
+@click.argument("input_file", type=click.File(encoding="utf-8-sig"))
+@click.argument("target_width", type=float)
+@click.argument("target_height", type=float)
+def resample(input_file, output_file, target_width, target_height):
+    """Resize all styles and tags of an ASS script.
+
+    \b
+    Simple usage:
+    $ prass resample 720p.ass 1920 1080 -o resampled.ass
+    """
+    src = AssScript.from_ass_stream(input_file)
+
+    from_width, from_height = src._find_section(
+        subs.SCRIPT_INFO_SECTION).get_resolution()
+
+    if from_width != target_width or from_height != target_height:
+        scale_width = target_width / float(from_width)
+        scale_height = target_height / float(from_height)
+        scale(src, scale_width, scale_height)
+        src.append_styles(src, False, True, [target_width, target_height])
+
+    src.to_ass_stream(output_file)
 
 @cli.command('sort', short_help="sort ass script events")
 @click.option("-o", "--output", "output_file", default='-', type=click.File(encoding="utf-8-sig", mode='w'), metavar="<path>")
@@ -304,8 +329,8 @@ if __name__ == '__main__':
     default_map = {}
     if not sys.stdin.isatty():
         for command, arg_name in (("convert-srt", "input_path"), ("copy-styles", "dst_file"),
-                                  ("sort", "input_file"), ("tpp", "input_file"), ("cleanup", "input_file"),
-                                  ('shift', "input_file")):
+                                  ("resample", "input_file"), ("sort", "input_file"), ("tpp", "input_file"),
+                                  ("cleanup", "input_file"), ('shift', "input_file")):
             default_map[command] = {arg_name: '-'}
 
     cli(default_map=default_map)

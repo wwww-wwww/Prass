@@ -1,5 +1,4 @@
 import codecs
-import os
 import bisect
 import re
 import copy
@@ -10,8 +9,7 @@ try:
 except:
     webcolors = None
 
-from tools import Timecodes
-from common import PrassError, zip, map, itervalues, iterkeys, iteritems, py2_unicode_compatible
+from .common import PrassError, zip, map, itervalues, iterkeys, iteritems, py2_unicode_compatible
 
 
 STYLES_SECTION = u"[V4+ Styles]"

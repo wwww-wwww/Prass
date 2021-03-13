@@ -1,4 +1,4 @@
-from common import PrassError
+from .common import PrassError
 import bisect
 import math
 

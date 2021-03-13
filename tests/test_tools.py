@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import unittest
 
-import tools
+import prass.tools as tools
 
 
 class TestTimecodes(unittest.TestCase):
